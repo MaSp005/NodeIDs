@@ -16,7 +16,7 @@ $register_ids(EditorUI) {
 
     auto winSize = CCDirector::get()->getWinSize();
 
-    if (auto menu = getChildOfType<CCMenu>(this, 0)) {
+    if (auto menu = this->getChildByType<CCMenu>(0)) {
         menu->setID("toolbar-categories-menu");
 
         setIDs(
@@ -51,6 +51,7 @@ $register_ids(EditorUI) {
             this,
             "toolbar-toggles-menu",
             RowLayout::create()
+                ->setGap(3.5f)
                 ->setCrossAxisOverflow(false)
                 ->setGrowCrossAxis(true)
                 ->setAxisAlignment(AxisAlignment::Center)
@@ -119,25 +120,27 @@ $register_ids(EditorUI) {
             this,
             "zoom-menu",
             ColumnLayout::create()
-                ->setAxisAlignment(AxisAlignment::Start),
+                ->setGap(3.f)
+                ->setAxisAlignment(AxisAlignment::End),
             menu->getChildByID("zoom-out-button"),
             menu->getChildByID("zoom-in-button")
         );
-        zoomMenu->setPositionY(150.f * winSize.height / 320);
         zoomMenu->setContentSize({ 50.f, zoomMenuHeight });
+        zoomMenu->setPositionY(playTestMenu->getPositionY() - 30 - (zoomMenu->getContentHeight() / 2));
         zoomMenu->updateLayout();
 
         auto linkMenu = detachAndCreateMenu(
             this,
             "link-menu",
             ColumnLayout::create()
-                ->setAxisAlignment(AxisAlignment::Start)
+                ->setGap(3.f)
+                ->setAxisAlignment(AxisAlignment::End)
                 ->setGrowCrossAxis(true),
             menu->getChildByID("unlink-button"),
             menu->getChildByID("link-button")
         );
-        linkMenu->setPositionY(150.f * winSize.height / 320);
         linkMenu->setContentSize({ 125.f, zoomMenuHeight });
+        linkMenu->setPositionY(playTestMenu->getPositionY() - 30 - (linkMenu->getContentHeight() / 2));
         linkMenu->updateLayout();
 
         menu->setPosition(42.f, 45.f);
@@ -149,7 +152,7 @@ $register_ids(EditorUI) {
         );
     }
 
-    if (auto menu = getChildOfType<CCMenu>(this, 1)) {
+    if (auto menu = this->getChildByType<CCMenu>(1)) {
         menu->setID("delete-category-menu");
 
         setIDs(
@@ -214,9 +217,78 @@ $register_ids(EditorUI) {
         deleteFilterMenu->updateLayout();
     }
 
-    if (auto menu = getChildOfType<CCMenu>(this, 2)) {
+    auto buttonBarIDs = {
+        "block-tab-bar",
+        "outline-tab-bar",
+        "slope-tab-bar",
+        "hazard-tab-bar",
+        "3d-tab-bar",
+        "portal-tab-bar",
+        "monster-tab-bar",
+        "pixel-tab-bar",
+        "collectible-tab-bar",
+        "icon-tab-bar",
+        "deco-tab-bar",
+        "sawblade-tab-bar",
+        "trigger-tab-bar",
+        "custom-tab-bar",
+        "edit-tab-bar",
+    };
+
+    size_t buttonBarIndex = 0;
+    for (auto id : buttonBarIDs) {
+        if (auto bar = this->getChildByType<EditButtonBar>(buttonBarIndex++)) {
+            bar->setID(id);
+        }
+        else break;
+    }
+
+    if (auto editBar = static_cast<EditButtonBar*>(this->getChildByID("edit-tab-bar"))) {
+        auto editButtonIDs = {
+            "move-up-small-button",
+            "move-down-small-button",
+            "move-left-small-button",
+            "move-right-small-button",
+            "move-up-button",
+            "move-down-button",
+            "move-left-button",
+            "move-right-button",
+            "move-up-big-button",
+            "move-down-big-button",
+            "move-left-big-button",
+            "move-right-big-button",
+            "move-up-tiny-button",
+            "move-down-tiny-button",
+            "move-left-tiny-button",
+            "move-right-tiny-button",
+            "move-up-half-button",
+            "move-down-half-button",
+            "move-left-half-button",
+            "move-right-half-button",
+            "flip-x-button",
+            "flip-y-button",
+            "rotate-cw-button",
+            "rotate-ccw-button",
+            "rotate-cw-45-button",
+            "rotate-ccw-45-button",
+            "rotate-free-button",
+            "rotate-snap-button",
+            "scale-button",
+            "scale-xy-button",
+            "warp-button",
+        };
+        size_t i = 0;
+        for (auto id : editButtonIDs) {
+            if (i < editBar->m_buttonArray->count()) {
+                static_cast<CCNode*>(editBar->m_buttonArray->objectAtIndex(i++))->setID(id);
+            }
+        }
+    }
+
+    if (auto menu = this->getChildByType<CCMenu>(2)) {
         menu->setID("build-tabs-menu");
 
+        // todo: maybe form these from buttonBarIDs to avoid duplication?
         setIDs(
             menu,
             0,
@@ -236,15 +308,16 @@ $register_ids(EditorUI) {
             "custom-tab"
         );
 
-        menu->setPosition(winSize.width / 2, 100.f);
+        menu->setPosition(winSize.width / 2 - 5.f, 100.f);
         menu->setContentSize({ winSize.width, 50.f });
         menu->setLayout(
             RowLayout::create()
-                ->setGap(5.f)
+                ->setGap(2.f)
+                ->setCrossAxisLineAlignment(AxisAlignment::Start)
         );
     }
 
-    if (auto menu = getChildOfType<CCMenu>(this, 3)) {
+    if (auto menu = this->getChildByType<CCMenu>(3)) {
         setIDs(
             menu,
             0,
@@ -291,7 +364,7 @@ $register_ids(EditorUI) {
             ColumnLayout::create()
                 ->setAxisAlignment(AxisAlignment::End)
                 ->setCrossAxisAlignment(AxisAlignment::End)
-                ->setGap(-3.5f)
+                ->setGap(-4.5f)
                 ->setGrowCrossAxis(true)
                 ->setCrossAxisOverflow(false)
                 ->setAxisReverse(true),
@@ -313,8 +386,8 @@ $register_ids(EditorUI) {
         }
         rightMenu->setContentSize({ 210.f, 160.f });
         rightMenu->setPosition(
-            winSize.width - 210.f / 2 - 5.f,
-            winSize.height / 2 + 42.5f
+            winSize.width - 210.f / 2,
+            winSize.height - 117.5f
         );
         rightMenu->updateLayout();
 
@@ -328,13 +401,13 @@ $register_ids(EditorUI) {
             this,
             "layer-menu",
             RowLayout::create()
-                ->setAxisAlignment(AxisAlignment::Start),
+                ->setAxisAlignment(AxisAlignment::End),
             menu->getChildByID("all-layers-button"),
             menu->getChildByID("prev-layer-button"),
             this->getChildByID("layer-index-label"),
             menu->getChildByID("next-layer-button")
         );
-        layerMenu->setPositionX(winSize.width - 110.f / 2);
+        layerMenu->setPositionX(winSize.width - 110.f / 2 - 6.f);
         layerMenu->setContentSize({ 110.f, 30.f });
         layerMenu->updateLayout();
     }

@@ -26,8 +26,10 @@ $register_ids(LevelInfoLayer) {
             setIDSafe<CCSprite>(this, 3 + iconOffset, "high-object-indicator");
             iconOffset++;
         }
-    } else if(!GameManager::sharedState()->getGameVariable("0047") && !m_challenge) {
-        setIDSafe<CCSprite>(this, 3, "view-profile");
+    //} else if(!GameManager::sharedState()->getGameVariable("0047") && !m_challenge && GameLevelManager::sharedState()->accountIDForUserID(m_level->m_userID) > 0) {
+    } else if(auto viewSprite = getChildBySpriteFrameName(this, "GJ_viewProfileTxt_001.png")) {
+        if(this->getChildByType<CCSprite>(3) != viewSprite) log::warn("View Profile sprite not in expected place! Node IDs may be incorrect!");
+        viewSprite->setID("view-profile");
         iconOffset++;
     }
 
@@ -38,20 +40,25 @@ $register_ids(LevelInfoLayer) {
 
     size_t labelOffset = 0;
 
-    setIDSafe<CCLabelBMFont>(this, 0, "title-label");
+    setIDSafe<CCLabelBMFont>(this, labelOffset++, "title-label");
 
     if(m_level->m_dailyID > 0) {
-        setIDSafe<CCLabelBMFont>(this, 1, "daily-label");
-        labelOffset++;
+        setIDSafe<CCLabelBMFont>(this, labelOffset++, "daily-label");
     }
 
-    setIDSafe<CCLabelBMFont>(this, 1 + labelOffset, "downloads-label");
-    setIDSafe<CCLabelBMFont>(this, 2 + labelOffset, "length-label");
-    setIDSafe<CCLabelBMFont>(this, 3 + labelOffset, "likes-label");
-    setIDSafe<CCLabelBMFont>(this, 4 + labelOffset, "orbs-label");
-    setIDSafe<CCLabelBMFont>(this, 5 + labelOffset, "stars-label");
+    setIDSafe<CCLabelBMFont>(this, labelOffset++, "downloads-label");
+    setIDSafe<CCLabelBMFont>(this, labelOffset++, "length-label");
+    setIDSafe<CCLabelBMFont>(this, labelOffset++, "exact-length-label");
+    setIDSafe<CCLabelBMFont>(this, labelOffset++, "likes-label");
+    setIDSafe<CCLabelBMFont>(this, labelOffset++, "orbs-label");
+    setIDSafe<CCLabelBMFont>(this, labelOffset++, "stars-label");
 
     setIDSafe<CCSprite>(this, 8 + iconOffset, "stars-icon");
+
+    if (m_level->m_dailyID > 0 || m_level->m_gauntletLevel) {
+        setIDSafe<CCLabelBMFont>(this, labelOffset++, "diamond-label");
+        setIDSafe<CCSprite>(this, 9 + iconOffset, "diamond-icon");
+    }
 
     /*if(m_ldmLabel) m_ldmLabel->setID("ldm-label");
     if(m_ldmToggler) m_ldmToggler->setID("ldm-toggler");*/
@@ -64,12 +71,12 @@ $register_ids(LevelInfoLayer) {
         coin->setID(fmt::format("coin-icon-{}", coinIdx++));
     }
 
-    if (auto menu = getChildOfType<CCMenu>(this, 0)) {
+    if (auto menu = this->getChildByType<CCMenu>(0)) {
         menu->setID("play-menu");
         setIDSafe(menu, 0, "play-button");
     }
 
-    if (auto menu = getChildOfType<CCMenu>(this, 2)) {
+    if (auto menu = this->getChildByType<CCMenu>(2)) {
         menu->setID("back-menu");
         auto backBtn = setIDSafe(menu, 0, "back-button");
         menu->setPositionX(
@@ -83,7 +90,7 @@ $register_ids(LevelInfoLayer) {
         );
     }
 
-    if (auto menu = getChildOfType<CCMenu>(this, 1)) {
+    if (auto menu = this->getChildByType<CCMenu>(1)) {
         menu->setID("right-side-menu");
 
         if (auto name = setIDSafe(menu, 0, "creator-name")) {
@@ -143,22 +150,25 @@ $register_ids(LevelInfoLayer) {
                 ->setAxisReverse(true)
         );
 
-        auto GM = GameManager::sharedState();
-        auto GJA = GJAccountManager::sharedState();
-        size_t leftMenuIdx = 0;
-        if(GM->m_hasRP == 1 || GM->m_hasRP == 2) {
-            setIDSafe(leftSideMenu, leftMenuIdx, "mod-rate-button");
-            leftMenuIdx++;
+        if(auto modRateBtn = getChildBySpriteFrameName(leftSideMenu, "GJ_starBtnMod_001.png")) {
+            modRateBtn->setID("mod-rate-button");
         }
 
-        if(GM->m_hasRP > 0) {
-            setIDSafe(menu, menu->getChildrenCount() - 1, "delete-button");
-        }else if(GM->m_playerUserID == m_level->m_userID || (GJA->m_accountID == m_level->m_accountID && GJA->m_accountID != 0)) {
-            setIDSafe(leftSideMenu, leftMenuIdx, "delete-button");
-            leftMenuIdx++;
+        if(auto deleteServerBtn = getChildBySpriteFrameName(leftSideMenu, "GJ_deleteServerBtn_001.png")) {
+            deleteServerBtn->setID("delete-button");
         }
-        //if above if OR if password != 0 (the 2nd condition is inlined in some weird way into the addChild call)
-        setIDSafe(leftSideMenu, leftMenuIdx, "copy-button");
+
+        if(auto deleteServerBtn = getChildBySpriteFrameName(menu, "GJ_deleteServerBtn_001.png")) {
+            deleteServerBtn->setID("delete-server-button");
+        }
+
+        if(auto copyBtn = getChildBySpriteFrameName(leftSideMenu, "GJ_duplicateBtn_001.png")) {
+            copyBtn->setID("copy-button");
+        }
+
+        if(auto copyBtn = getChildBySpriteFrameName(leftSideMenu, "GJ_duplicateLockedBtn_001.png")) {
+            copyBtn->setID("copy-button");
+        }
 
         if(auto btn = leftSideMenu->getChildByID("mod-rate-button")) btn->setZOrder(-1);
         if(auto btn = leftSideMenu->getChildByID("delete-button")) btn->setZOrder(-2);
@@ -168,7 +178,7 @@ $register_ids(LevelInfoLayer) {
         leftSideMenu->updateLayout();
     }
 
-    if (auto menu = getChildOfType<CCMenu>(this, 3)) {
+    if (auto menu = this->getChildByType<CCMenu>(3)) {
         menu->setID("other-menu");
 
         setIDSafe(menu, 0, "info-button");
@@ -179,13 +189,13 @@ $register_ids(LevelInfoLayer) {
         setIDSafe(menu, 5, "list-button");
     }
 
-    if (auto menu = getChildOfType<CCMenu>(this, 4)) {
+    if (auto menu = this->getChildByType<CCMenu>(4)) {
         menu->setID("garage-menu");
 
         setIDSafe(menu, 0, "garage-button");
     }
 
-    if (auto menu = getChildOfType<CCMenu>(this, 5)) {
+    if (auto menu = this->getChildByType<CCMenu>(5)) {
         menu->setID("settings-menu");
 
         setIDSafe(menu, 0, "settings-button");
